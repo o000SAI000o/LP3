@@ -1,0 +1,109 @@
+ SPDX-License-Identifier MIT
+pragma solidity ^0.8.0;
+
+
+    ✅ Smart Contract Name Studentdata
+    This contract stores student details using
+    1. Structure (struct) to hold student data
+    2. Dynamic Array to store multiple students
+    3. Fallback function to handle invalid calls or Ether sent without data
+
+
+contract Studentdata {
+    
+     -----------------------------
+     ✅ 1. STRUCTURE (Student Template)
+     -----------------------------
+    
+        'struct' is used to define a custom data type.
+        Here, Student contains
+        - name  Student name (string)
+        - roll  Roll number (uint256)
+    
+    struct Student {
+        string name;
+        uint256 roll;
+    }
+
+     Dynamic array to store multiple Student records
+    Student[] public studentarr;
+
+     -----------------------------
+     ➕ Add New Student to Array
+     -----------------------------
+    
+        addStudent() Adds a student into the array.
+        - Checks if roll number already exists.
+        - If exists, revert() stops execution and saves gas.
+        - push() stores data into dynamic array.
+    
+    function addStudent(string memory name, uint256 roll) public {
+         Ensure no duplicate roll numbers
+        for (uint i = 0; i  studentarr.length; i++) {
+            if (studentarr[i].roll == roll) {
+                revert(Student with this roll already exists);
+            }
+        }
+         Add new student to array
+        studentarr.push(Student(name, roll));
+    }
+
+     -----------------------------
+     📏 Get Total Number of Students
+     -----------------------------
+    
+        Returns the total count of stored students.
+        'view' means no state change → no gas required.
+    
+    function getStudentLength() public view returns(uint) {
+        return studentarr.length;
+    }
+
+     -----------------------------
+     📚 Display All Students
+     -----------------------------
+    
+        Returns the entire array of Student structs.
+        Note Returning arrays costs more gas (avoid in large data sets).
+    
+    function displayAllStudent() public view returns(Student[] memory) {
+        return studentarr;
+    }
+
+     -----------------------------
+     🔍 Get Student Data by Index
+     -----------------------------
+    
+        Returns details of a student at a given index.
+        require() is used for validation → throws error if index is invalid.
+    
+    function getStudentByIndex(uint idx) public view returns(Student memory) {
+        require(idx  studentarr.length, Index out of bound);
+        return studentarr[idx];
+    }
+
+     -----------------------------
+     ⚠️ Fallback Function
+     -----------------------------
+    
+        fallback() is executed when
+        - an unknown function is called
+        - data is sent with no matching function
+        - non-existing function is accessed
+
+        external & payable allow contract to accept Ether even on invalid calls.
+    
+    fallback() external payable {
+         Runs on invalid function call or data sent to contract
+    }
+
+     -----------------------------
+     💰 Receive Ether
+     -----------------------------
+    
+        receive() executes when contract receives Ether with no data.
+        Example sending ETH directly to the contract.
+    
+    receive() external payable {}
+}
+s

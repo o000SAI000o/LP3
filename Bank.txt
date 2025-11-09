@@ -1,0 +1,105 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+/*
+    ✅ Smart Contract: BankAccount
+    This contract allows a bank customer to perform 3 operations:
+    1. Deposit Money
+    2. Withdraw Money
+    3. Check Account Balance
+
+    ✔ Uses constructor to set account owner
+    ✔ Uses require() for security validations
+    ✔ Uses payable for accepting and sending Ether
+*/
+
+contract BankAccount {
+
+    uint256 private balance = 0;   // Stores the customer's account balance
+    address public accOwner;       // Stores Ethereum address of the account owner
+
+    // -----------------------------
+    // 🧑‍💼 Constructor - Set Account Owner
+    // -----------------------------
+    /*
+        The constructor runs only once during contract deployment.
+        msg.sender refers to the wallet address that deployed the contract,
+        and becomes the owner (only owner can deposit/withdraw).
+    */
+    constructor() {
+        accOwner = msg.sender;
+    }
+
+    // -----------------------------
+    // 💰 Deposit Function
+    // -----------------------------
+    /*
+        Deposit() is payable, meaning it can receive Ether.
+        Checks:
+        - Only owner can deposit
+        - Deposit amount must be greater than zero
+        msg.value contains the amount of Ether sent to this function
+        After validation, balance is increased by the deposited amount
+    */
+    function Deposit() public payable {
+        require(accOwner == msg.sender, "You are not the account owner");
+        require(msg.value > 0, "Amount should be greater than zero");
+
+        balance += msg.value;
+    }
+
+    // -----------------------------
+    // 🧾 Withdraw Function
+    // -----------------------------
+    /*
+        Withdraw() allows the owner to withdraw Ether.
+        Checks:
+        - Only owner can withdraw
+        - Withdrawal amount must be greater than zero
+        - Contract must have sufficient balance
+        Note: msg.value is the withdrawal amount requested by user
+        After validation, balance is reduced by withdrawal amount.
+    */
+    function Withdraw(uint256 amt) public {
+        require(accOwner == msg.sender, "You are not the account owner");
+        require(amt > 0, "Amount should be greater than zero");
+        require(address(this).balance >= amt, "Insufficient balance in contract");
+
+        balance -= amt;
+        payable(msg.sender).transfer(amt);  // Transfer Ether to owner
+    }
+
+    // -----------------------------
+    // 📍 Show Balance
+    // -----------------------------
+    /*
+        showBalance() is a view function → no gas fee since no state change.
+        Only owner can view the balance stored in the contract.
+    */
+    function showBalance() public view returns(uint256) {
+        require(accOwner == msg.sender, "You are not the account owner");
+        return balance;
+    }
+
+    // -----------------------------
+    // 💲 Receive Ether Without Calling Deposit
+    // -----------------------------
+    /*
+        If someone sends Ether directly without calling Deposit(),
+        receive() will accept and add it to the contract balance.
+    */
+    receive() external payable {
+        balance += msg.value;
+    }
+
+    // -----------------------------
+    // ⚠️ Fallback Function
+    // -----------------------------
+    /*
+        fallback() executes when:
+        - function does not exist
+        - wrong data/parameters passed
+        It prevents accidental transaction failure.
+    */
+    fallback() external payable {}
+}
